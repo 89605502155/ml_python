@@ -1,4 +1,5 @@
 from training_algorithm import Predict
+from training_algorithm import Predict_for_predicted_reference_plots_by_kfold
 import numpy as np
 from npls import npls
 import pandas as pd
@@ -31,9 +32,11 @@ class Make_predict_reference_for_all_fluorophores_from_dataset:
         num=0
         for i,j in df2.iterrows():
             print(j['n'],type(j['a']),i)
-            model=Predict(file_name=self.file_name,number_of_column=num,
-                           number_of_components=[j['n']],l2_coefs=np.array([j['a']]),
-                           regression_method=npls)
+            model=Predict_for_predicted_reference_plots_by_kfold(
+                file_name=self.file_name,number_of_column=num,
+                number_of_components=[j['n']],l2_coefs=np.array([j['a']]),
+                regression_method=npls
+            )
             result = model.main()
             num+=1
             all_result.append(result) 

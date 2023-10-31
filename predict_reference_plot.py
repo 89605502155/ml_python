@@ -47,9 +47,9 @@ class Predict_reference_plot:
 
     def make_dir_name(self,name_dataset:str|None)->str:
         if name_dataset==None:
-            return 'plots/none'
+            return 'plots2/none'
         else:
-            return 'plots/'+str(name_dataset)
+            return 'plots2/'+str(name_dataset)
 
 
     def make_full_name_file(self,name_dataset:str|None)->str:
@@ -63,13 +63,16 @@ class Predict_reference_plot:
         number=0
         for row in range(self.row):
             for col in range(self.col):
-                self.paint_block(row=row,col=col,
-                                 y=result[number][0],
-                                 pred=result[number][1],
-                                 rmse=result[number][3],
-                                 name=result[number][4])
-                # self.paint_block(row,col,[1,2,3],[3,2,3],0.0123,'String')
-                number+=1
+                try:
+                    self.paint_block(row=row,col=col,
+                                    y=result[number][0],
+                                    pred=result[number][1],
+                                    rmse=result[number][3],
+                                    name=result[number][5])
+                    # self.paint_block(row,col,[1,2,3],[3,2,3],0.0123,'String')
+                    number+=1
+                except IndexError:
+                    continue
         plt.tight_layout(h_pad=5,w_pad=5)
         if save:
             dir_name=self.make_dir_name(name_dataset=dataset_name)
