@@ -1,6 +1,6 @@
 from training_algorithm import Training
 import numpy as np
-from rmse_plot import Rmse_Plot
+from paint_scripts.rmse_plot import Rmse_Plot
 import json
 
 class Controller_for_the_rmse_plot:

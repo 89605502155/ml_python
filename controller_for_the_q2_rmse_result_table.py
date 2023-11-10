@@ -3,7 +3,7 @@ import numpy as np
 import json
 from open import Open_file
 from open import Open_Synthetic_theoretical_loadings
-from theory_practice_loadings import Theory_practice_loadings
+from paint_scripts.theory_practice_loadings import Theory_practice_loadings
 import pandas as pd
 from npls import npls
 

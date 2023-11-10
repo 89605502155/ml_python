@@ -3,7 +3,7 @@ from training_algorithm import Predict_for_predicted_reference_plots_by_kfold
 import numpy as np
 from npls import npls
 import pandas as pd
-from predict_reference_plot import Predict_reference_plot
+from paint_scripts.predict_reference_plot import Predict_reference_plot
 
 class Make_predict_reference_for_all_fluorophores_from_dataset:
     def __init__(self, file_name:str=None, regression_method=npls) -> None:
