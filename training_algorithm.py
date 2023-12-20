@@ -15,15 +15,25 @@ from dataset_model import Centering_dataset_model as cdm
 
 class Training:
     def __init__(self, file_name:str=None,number_of_column:int=0, regression_method=npls,
-                 number_of_components:list=[6],l2_coefs:np.ndarray=np.array([0.1])) -> None:
+                 number_of_components:list=[6],l2_coefs:np.ndarray=np.array([0.1]),
+                 derivative_rang:list=None,norm_func:list=None) -> None:
         self.file_name=file_name
         self.number_of_column=number_of_column
         self.regression_method=regression_method
         self.number_of_components=number_of_components
         self.l2_coefs=l2_coefs
+        self.derivative_rang=derivative_rang
+        self.norm_func=norm_func
 
     def train(self,data:cvdm):
-        model=self.regression_method()
+        if self.derivative_rang is None:
+            model=self.regression_method(excitation_wavelenth=data.Exitation_wale,
+                                         emission_wavelenth=data.Emission_wale)
+        else:
+            model=self.regression_method(excitation_wavelenth=data.Exitation_wale,
+                                         emission_wavelenth=data.Emission_wale,
+                                         derivative_rang=self.derivative_rang,
+                                         norm_func=self.norm_func)
         scoring={'mse': make_scorer(mean_squared_error),'r2':'r2'}
         shuffle_split = ShuffleSplit(n_splits=27,test_size=1*0.1428, random_state=42)
         parametrsNames={
