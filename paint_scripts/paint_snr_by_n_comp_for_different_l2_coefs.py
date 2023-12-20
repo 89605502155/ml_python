@@ -23,6 +23,7 @@ class paint_snr_by_n_comp_for_different_l2_coefs:
     def paint_snr(self,row,col,snr_data_dict:dict,ax_name:str="Excitation",metric_name:str="evklid"):
         self.ax = self.fig.add_subplot(self.spec[row, col])
         l2_coefs_list=list(snr_data_dict.keys())
+        #print(metric_name,)
         for i in range(len(l2_coefs_list)):
             snr_list=list()
             n_comp_list=list()      
