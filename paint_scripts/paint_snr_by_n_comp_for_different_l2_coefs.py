@@ -18,7 +18,7 @@ class paint_snr_by_n_comp_for_different_l2_coefs:
         dir_name='plots/snr/v1/'+data_set_name+'/'+fluorophore_name+'/'+metric_name
         if save:
             Path(dir_name).mkdir(parents=True, exist_ok=True)
-        return dir_name+'/'+fluorophore_name+'/'+metric_name
+        return dir_name+'/'+fluorophore_name+metric_name
     
     def paint_snr(self,row,col,snr_data_dict:dict,ax_name:str="Excitation",metric_name:str="evklid"):
         self.ax = self.fig.add_subplot(self.spec[row, col])
@@ -33,7 +33,7 @@ class paint_snr_by_n_comp_for_different_l2_coefs:
                 n_comp_list.append(j+1)
                 snr_list.append(snr_data_dict[l2_coefs_list[i]][ax_name][j][metric_name][0])
             self.ax.plot(n_comp_list,
-                         snr_list,'.',label="l2="+str(l2_coefs_list[i]),ms=20)
+                         snr_list,'.',label="lg(L2)="+str(int(np.log10(l2_coefs_list[i]))),ms=30)
         self.ax.grid(color="black", drawstyle="default", linewidth=0.7)
         self.ax.set_xlabel(ax_name+" component",  fontsize=self.ax_name_label_fontsize,
                     labelpad=15)
@@ -43,6 +43,8 @@ class paint_snr_by_n_comp_for_different_l2_coefs:
         self.ax.set_xticklabels(self.ax.get_xticklabels(), fontsize=self.ax_label_number_font)
         self.ax.set_yticklabels(self.ax.get_yticklabels(), fontsize=self.ax_label_number_font)
         self.ax.tick_params(axis='x', pad=15)
+        self.ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15),
+            fancybox=True, shadow=True, ncol=3,fontsize=30)
         self.ax.get_xaxis().set_tick_params(direction='in')
         self.ax.get_yaxis().set_tick_params(direction='in')
 
@@ -50,7 +52,8 @@ class paint_snr_by_n_comp_for_different_l2_coefs:
                  save_file_name:str,fluorophore_name:str,save:bool=False,
                  metric_name:str="evklid"):
         mpl.rc('font',family='Times New Roman')
-        self.fig = plt.figure(figsize=(9*self.col, 9.5*self.row),constrained_layout=True)
+        self.fig = plt.figure(figsize=(12*self.col, 13.5*self.row),constrained_layout=True)
+        #self.fig = plt.figure()
         self.spec = self.fig.add_gridspec(ncols=self.col, nrows=self.row)
         #plt.subplots_adjust(wspace=0.3, hspace=0.3)
         number=0

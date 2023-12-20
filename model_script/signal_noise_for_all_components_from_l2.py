@@ -95,6 +95,8 @@ class signal_noise_for_all_components_from_l2:
                      fluorophore_name=fluor_name,save=save,metric_name=self.norm_func[0])
         
     
+        
+    
 
         
            
