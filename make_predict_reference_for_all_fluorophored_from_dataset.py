@@ -1,9 +1,11 @@
 from training_algorithm import Predict
+from training_algorithm import Predict_for_predicted_reference_plots_by_kfold_pls
 from training_algorithm import Predict_for_predicted_reference_plots_by_kfold
 import numpy as np
 from npls import npls
 import pandas as pd
 from paint_scripts.predict_reference_plot import Predict_reference_plot
+from sklearn.cross_decomposition import PLSRegression
 
 class Make_predict_reference_for_all_fluorophores_from_dataset:
     def __init__(self, file_name:str=None, regression_method=npls) -> None:
@@ -36,6 +38,47 @@ class Make_predict_reference_for_all_fluorophores_from_dataset:
                 file_name=self.file_name,number_of_column=num,
                 number_of_components=[j['n']],l2_coefs=np.array([j['a']]),
                 regression_method=npls
+            )
+            result = model.main()
+            num+=1
+            all_result.append(result) 
+        self.response=all_result
+        return all_result
+    
+
+        
+class Make_predict_reference_for_all_fluorophores_from_dataset_pls:
+    def __init__(self, file_name:str=None, regression_method=PLSRegression) -> None:
+        self.file_name=file_name
+        self.regression_method=regression_method
+
+    def get_dataset_name(self,name:str)->str:
+        names=dict()
+        names['syn']='Synthetic'
+        names['asmund']='asmund'
+        names['dorrit']='dorrit'
+        names['marat']='marat'
+        return names[name]
+
+
+    def painter(self,col,row,save:bool=False):
+        paint=Predict_reference_plot(col=col,row=row)
+        name=self.get_dataset_name(self.file_name)
+        paint.main(result=self.response,dataset_name=name, save=save)
+
+    def make_result(self,rand):
+        df1=pd.read_excel('best_param.ods', engine="odf",header=None,names=['name','n'])
+        df2=df1[df1.name==self.file_name]
+        all_result=list()
+        print(df2)
+        num=0
+        for i,j in df2.iterrows():
+            print(j['n'],i)
+            model=Predict_for_predicted_reference_plots_by_kfold_pls(
+                file_name=self.file_name,number_of_column=num,
+                number_of_components=[j['n']],
+                regression_method=PLSRegression,
+                rand=rand
             )
             result = model.main()
             num+=1

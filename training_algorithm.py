@@ -1,6 +1,8 @@
 from open import Open_file
 from centering_and_cross_validation import Cross_validation as cv
+from centering_and_cross_validation import Cross_validation_for_pls as cv_pls
 from centering_and_cross_validation import Centetering
+from centering_and_cross_validation import Centetering_for_pls
 from dataset_model import Cross_validation_dataset_model as cvdm
 from npls import npls
 from sklearn.metrics import r2_score, make_scorer
@@ -12,9 +14,11 @@ from sklearn.model_selection import KFold
 from sklearn.model_selection import GridSearchCV
 from dataset_model import Dataset_model as dm
 from dataset_model import Centering_dataset_model as cdm
+from sklearn.cross_decomposition import PLSRegression
+
 
 class Training:
-    def __init__(self, file_name:str=None,number_of_column:int=0, regression_method=npls,
+    def __init__(self, snr:float=-1.0, file_name:str=None,number_of_column:int=0, regression_method=npls,
                  number_of_components:list=[6],l2_coefs:np.ndarray=np.array([0.1]),
                  derivative_rang:list=None,norm_func:list=None) -> None:
         self.file_name=file_name
@@ -24,6 +28,7 @@ class Training:
         self.l2_coefs=l2_coefs
         self.derivative_rang=derivative_rang
         self.norm_func=norm_func
+        self.snr=snr
 
     def train(self,data:cvdm):
         if self.derivative_rang is None:
@@ -33,7 +38,9 @@ class Training:
             model=self.regression_method(excitation_wavelenth=data.Exitation_wale,
                                          emission_wavelenth=data.Emission_wale,
                                          derivative_rang=self.derivative_rang,
-                                         norm_func=self.norm_func)
+                                         norm_func=self.norm_func,
+                                         crash_norm_name=self.norm_func,
+                                         crash_norm_value=self.snr)
         scoring={'mse': make_scorer(mean_squared_error),'r2':'r2'}
         shuffle_split = ShuffleSplit(n_splits=27,test_size=1*0.1428, random_state=42)
         parametrsNames={
@@ -50,7 +57,9 @@ class Training:
         # r2_cv=gridCought.cv_results_[ "mean_test_r2" ]
         # r2_c=gridCought.cv_results_[ "mean_train_r2" ]
         #gridCought.cv_results_['std_test_mse'
-        return [r2_p,gridCought.cv_results_,gridCought.best_params_,gridCought.best_estimator_]
+        pred=gridCought.predict(data.Test_spectrum)
+        rmsep=((mean_squared_error(y_true=data.Test_concentration,y_pred=pred))**0.5)/data.Concentration_range
+        return [r2_p,rmsep,gridCought.cv_results_,gridCought.best_params_,gridCought.best_estimator_]
 
     def main(self):
         b=Open_file()
@@ -84,7 +93,8 @@ class Predict:
         return np.array(p)
     
     def train(self,data:cvdm,all_data:dm,number_of_column:int,concentration_range:float=1):
-        model=self.regression_method()
+        model=self.regression_method(emission_wavelenth=data.Emission_wale,
+                                     excitation_wavelenth=data.Exitation_wale)
         scoring={'mse': make_scorer(mean_squared_error),'r2':'r2'}
         shuffle_split = ShuffleSplit(n_splits=27,test_size=1*0.1428, random_state=42)
         parametrsNames={
@@ -118,7 +128,7 @@ class Predict:
 
     
 class Predict_for_predicted_reference_plots_by_kfold:
-    def __init__(self, file_name:str=None,number_of_column:int=0, regression_method=npls,
+    def __init__(self, file_name:str=None,number_of_column:int=0, regression_method=PLSRegression,
                  number_of_components:list=[6],l2_coefs:np.ndarray=np.array([0.1])) -> None:
         self.file_name=file_name
         self.number_of_column=number_of_column
@@ -180,5 +190,67 @@ class Predict_for_predicted_reference_plots_by_kfold:
                            concentration_range=data.Concentration_range)
         resoult.append(data.Concentration_range)
         return resoult
-
     
+class Predict_for_predicted_reference_plots_by_kfold_pls:
+    def __init__(self,rand, file_name:str=None,number_of_column:int=0, regression_method=PLSRegression,
+                 number_of_components:list=[6]) -> None:
+        self.file_name=file_name
+        self.number_of_column=number_of_column
+        self.regression_method=regression_method
+        self.number_of_components=number_of_components
+        self.rand=rand
+
+    def rmse(self,pred,y)->float:
+        mse=mean_squared_error(y_true=y,y_pred=pred)
+        return pow(mse,0.5)
+    
+    def cicle_of_learning_model(self,gridCought:GridSearchCV,x_train:np.ndarray,
+                                y_train:np.ndarray,x_test:np.ndarray):
+        gridCought.fit(x_train,y_train)
+        predict=gridCought.predict(x_test)
+        return predict
+
+    def train(self,data:cdm,all_data:dm,number_of_column:int,concentration_range:float=1):
+        model=self.regression_method()
+        scoring={'mse': make_scorer(mean_squared_error),'r2':'r2'}
+        shuffle_split = ShuffleSplit(n_splits=27,test_size=1*0.1428, random_state=self.rand)
+        parametrsNames={
+            'n_components': self.number_of_components
+            }
+        gridCought=GridSearchCV(model, parametrsNames, cv=shuffle_split, scoring=scoring,
+                          refit='r2', return_train_score=True)
+        
+        kf = KFold(n_splits=5)
+        kf.get_n_splits(data.Centering_concentration)
+        print(kf)
+        predictors=np.array([])
+        true_data=np.array([])
+        for i, (train_index, test_index) in enumerate(kf.split(data.Centering_concentration)):
+            predict=self.cicle_of_learning_model(gridCought=gridCought,
+                                         x_train=data.Centering_spectrum[train_index,:],
+                                         y_train=data.Centering_concentration[train_index],
+                                         x_test=data.Centering_spectrum[test_index,:])
+            predictors=np.concatenate((predictors,predict), axis=None)
+            true_data=np.concatenate((true_data,data.Centering_concentration[test_index]), axis=None)
+            del gridCought
+            gridCought=GridSearchCV(model, parametrsNames, cv=shuffle_split, scoring=scoring,
+                          refit='r2', return_train_score=True)
+
+        
+        predictors+=data.Const_centering_concentraton
+        true_data+=data.Const_centering_concentraton
+        rmse=self.rmse(pred=predictors,y=true_data)
+        q2=r2_score(y_true=true_data,y_pred=predictors)
+        print(rmse/concentration_range,q2)
+        return [true_data,predictors,rmse,rmse/concentration_range,q2,data.Name_of_column_list]
+
+    def main(self)->list:
+        b=Open_file()
+        a=b.main(file_name=self.file_name)
+        mod=Centetering_for_pls(data=a,number_of_column=self.number_of_column)
+        data=mod.main()
+        resoult=self.train(data=data,all_data=a,number_of_column=self.number_of_column,
+                           concentration_range=data.Concentration_range)
+        resoult.append(data.Concentration_range)
+        return resoult
+

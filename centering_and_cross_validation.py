@@ -74,3 +74,70 @@ class Cross_validation:
         else:
             cross_validation_data=self.cross_validation(self.data)
         return cross_validation_data
+
+class Centetering_for_pls:
+    def __init__(self,data:dm,number_of_column:int=0) -> None:
+        self.data=data
+        self.number_of_column=number_of_column
+    
+    def main(self)-> cdm:
+        self.data.Sectrun=self.data.Sectrun.reshape([self.data.Sectrun.shape[0], self.data.Sectrun.shape[1]*self.data.Sectrun.shape[2]])
+        concentration_range=max(self.data.Consentration[:,self.number_of_column])-min(self.data.Consentration[:,self.number_of_column])
+        a=cdm(Emission_wale=self.data.Emission_wale,
+              Exitation_wale=self.data.Exitation_wale,
+              Name_of_column_list=self.data.Name_of_column_list[self.number_of_column],
+              Centering_concentration=self.data.Consentration[:,self.number_of_column],
+              Const_centering_concentraton=0,
+              Const_centering_spectrum=0,
+              Centering_spectrum=self.data.Sectrun,
+              Concentration_range=concentration_range)
+        return a
+
+class Cross_validation_for_pls:
+    def __init__(self,data:dm,number_of_column:int=0, is_centering_needs:bool=True,test_size_for_split:float=0.1428) -> None:
+        self.data=data
+        self.number_of_column=number_of_column
+        self.is_centering_needs=is_centering_needs
+        self.test_size_for_split=test_size_for_split
+
+    def cross_validation(self, spectrum:dm|cdm)->cvdm:
+        if cdm==type(spectrum):
+            X_train, X_test, y_train, y_test = train_test_split(
+                spectrum.Centering_spectrum, spectrum.Centering_concentration,
+                  test_size=self.test_size_for_split, random_state=42)
+            cross_validation_data=cvdm(Emission_wale=self.data.Emission_wale,
+                                       Exitation_wale=self.data.Exitation_wale,
+                                       Name_of_column_list=spectrum.Name_of_column_list,
+                                       Train_concentration=y_train,
+                                       Test_concentration=y_test,
+                                       Train_spectrum=X_train,
+                                       Test_spectrum=X_test,
+                                       Const_centering_concentraton=spectrum.Const_centering_concentraton,
+                                       Const_centering_spectrum=spectrum.Const_centering_spectrum,
+                                       Concentration_range=spectrum.Concentration_range)
+        elif dm==type(spectrum):
+            X_train, X_test, y_train, y_test = train_test_split(
+                spectrum.Sectrun, spectrum.Consentration[:,self.number_of_column],
+                  test_size=self.test_size_for_split, random_state=42)
+            cross_validation_data=cvdm(Emission_wale=self.data.Emission_wale,
+                                       Exitation_wale=self.data.Exitation_wale,
+                                       Name_of_column_list=self.data.Name_of_column_list[self.number_of_column],
+                                       Train_concentration=y_train,
+                                       Test_concentration=y_test,
+                                       Train_spectrum=X_train,
+                                       Test_spectrum=X_test,
+                                       Concentration_range=max(self.data.Consentration[:,self.number_of_column])-min(self.data.Consentration[:,self.number_of_column])
+        )
+        else:
+            raise TypeError('You have some problems with centering_and_cross_validation.py 60 line')
+        return cross_validation_data
+
+
+    def main(self)->cvdm:
+        if self.is_centering_needs:
+            centering_model=Centetering_for_pls(data=self.data,number_of_column=self.number_of_column)
+            centering_data=centering_model.main()
+            cross_validation_data=self.cross_validation(centering_data)
+        else:
+            cross_validation_data=self.cross_validation(self.data)
+        return cross_validation_data

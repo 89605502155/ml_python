@@ -27,17 +27,17 @@ class Predict_reference_plot:
         self.ax.plot(y,y,'blue',lw=3)
         self.ax.plot(y,pred,'.',color='red',ms=20)
         self.ax.grid(color="black", drawstyle="default", linewidth=0.7)
-        self.ax.set_xlabel("True data",  fontsize=self.ax_name_label_fontsize,
+        self.ax.set_xlabel("Введено",  fontsize=self.ax_name_label_fontsize,
                     labelpad=15)
-        self.ax.set_ylabel("Predicted data",  fontsize=self.ax_name_label_fontsize,
+        self.ax.set_ylabel("Найдено",  fontsize=self.ax_name_label_fontsize,
                     labelpad=15)
-        self.ax.set_title(name, fontsize=self.title_label_name_fontsize,
+        self.ax.set_title(self.rus_names(name), fontsize=self.title_label_name_fontsize,
                    loc="center" ,pad=15)
         self.ax.tick_params(which='major', length=10, width=2)
         if rmse>=0.0001:
-            stri='$\\frac {RMSE}{concentration\ range}$'+'='+str(rmse.round(4))
+            stri='$\\frac {RMSE}{ДК}$'+'='+str(rmse.round(4))
         else:
-            stri='$\\frac {RMSE}{concentration\ range}$'+'<0.0001'
+            stri='$\\frac {RMSE}{ДК}$'+'<0.0001'
         self.ax.text(1.1*min(y),0.85*max([max(y),max(pred)]),stri, fontsize=self.text_size_in_box,fontweight='bold',
               bbox=dict(boxstyle="round",fc='white',ec='black'))
         self.ax.set_xticklabels(self.ax.get_xticklabels(), fontsize=self.ax_label_number_font)
@@ -47,13 +47,32 @@ class Predict_reference_plot:
 
     def make_dir_name(self,name_dataset:str|None)->str:
         if name_dataset==None:
-            return 'plots2/none'
+            return 'plots2_ru_p/none'
         else:
-            return 'plots2/'+str(name_dataset)
+            return 'plots2_ru_p/'+str(name_dataset)
 
 
     def make_full_name_file(self,name_dataset:str|None)->str:
         return self.make_dir_name(name_dataset=name_dataset)+'/'+'predict_reference'
+    
+    def rus_names(self,name:str)->str:
+        match name:
+            case 'humic':return 'гумины'
+            case 'tryptophane': return 'триптофан'
+            case 'tyrosine': return 'тирозин'
+            case 'catechol': return 'катехол'
+            case 'hydroquinone': return 'гидрохинон'
+            case 'indole': return 'индол'
+            case 'resorcinol': return 'резорцин'
+            case 'phenylalanine': return 'фелинлаланин'
+            case 'DOPA': return 'DOPA'
+            case 'first': return 'первый флуорофор'
+            case'second': return 'второй флуорофор'
+            case 'third': return 'третий флуорофор'
+            case 'fourth': return 'четвертый флуорофор'
+            case _:return ' '
+        
+        
 
     def paint(self,result:list,save:bool=False,dataset_name:str='Synthetic'):
         mpl.rc('font',family='Times New Roman')
@@ -64,6 +83,8 @@ class Predict_reference_plot:
         for row in range(self.row):
             for col in range(self.col):
                 try:
+                    if dataset_name=='asmund' and result[number][5]=='tyrosine':
+                        raise IndexError
                     self.paint_block(row=row,col=col,
                                     y=result[number][0],
                                     pred=result[number][1],

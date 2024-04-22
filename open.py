@@ -42,6 +42,21 @@ class Open_file:
         resoult.Consentration[:,2]*=0.02
         return resoult
     
+    def dorrit_open_all(self)-> Dataset_model:
+        d1=np.load('data/dorrit2_2021-11-18.npz')
+        d2=np.load('data/Dorrit.npz')
+        names=['hydroquinone','tryptophane','phenylalanine','DOPA']
+        y=list()
+        # y[:,0]=d1['Y'][:,0]
+        # y[:,1]=d1['Y'][:,1]
+        # y[:,2]=d1['Y'][:,2]*0.02
+        # y[:,3]=d1['Y'][:,3]
+        resoult = Dataset_model(Sectrun=d1['EEM'][:,:,:],Consentration=d1['Y'],
+                                Exitation_wale=d2['Ex'][:],Emission_wale=d2['Em'],
+                                Name_of_column_list=names)
+        resoult.Consentration[:,2]*=0.02
+        return resoult
+    
     def marat_open(self)-> Dataset_model:
         Xdata = pkl.load(open('data/X_new.pkl.gz', 'rb'))
         Ydata = pkl.load(open('data/y.pkl.gz', 'rb'))
@@ -70,6 +85,8 @@ class Open_file:
             return self.asmund_open()
         elif file_name=='dorrit':
             return self.dorrit_open()
+        elif file_name=='dorrit_all':
+            return self.dorrit_open_all()
         elif file_name=='marat':
             return self.marat_open()
         else:
