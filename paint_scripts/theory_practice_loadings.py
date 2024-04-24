@@ -26,7 +26,7 @@ class Theory_practice_loadings:
 
 
     def create_save_name(self,data_set_name:str,fluorophore_name:str,save:bool=False):
-        dir_name='plots/loadings2/'+data_set_name+'/'+fluorophore_name
+        dir_name='plots21/loadings2/'+data_set_name+'/'+fluorophore_name
         if save:
             Path(dir_name).mkdir(parents=True, exist_ok=True)
         return dir_name+'/'+fluorophore_name
@@ -97,8 +97,8 @@ class Theory_practice_loadings:
     def paint(self, col, row, theory,practise,wale_lenth,x_name:str):
         self.ax = self.fig.add_subplot(self.spec[row, col])
         theory,practise=self.coeff(theory,practise)
-        self.ax.plot(wale_lenth,theory,'--',color='green',lw=4,label="theoretical")
-        self.ax.plot(wale_lenth,practise,color='red',lw=4,label="experimental")
+        self.ax.plot(wale_lenth,theory,'--',color='green',lw=4,label="теоретические")
+        self.ax.plot(wale_lenth,practise,color='red',lw=4,label="экспериментальные")
         
         # self.ax.set_xticks(range(1,n_comp[-1]+1))
         if self.x_label_control:
@@ -126,12 +126,12 @@ class Theory_practice_loadings:
                 if number==0:
                     self.paint(col=col,row=row,theory=self.theory_emission_loadings,
                                practise=self.practice_emission_loadings,
-                               wale_lenth=self.emission_wave_lenth, x_name="Emission wavelength")
+                               wale_lenth=self.emission_wave_lenth, x_name="длина волны регистрации, нм")
                 # self.paint_block(row,col,[1,2,3],[3,2,3],0.0123,'String')
                 elif number==1:
                     self.paint(col=col,row=row,theory=self.theory_excitation_loadings,
                                practise=self.practice_excitation_loadings,
-                               wale_lenth=self.excitation_wave_lenth, x_name="Excitation wavelength")
+                               wale_lenth=self.excitation_wave_lenth, x_name="длина волны возбуждения, нм")
                 number+=1
         plt.tight_layout(h_pad=5,w_pad=5)
         

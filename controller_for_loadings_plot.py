@@ -41,6 +41,19 @@ class Controller_for_loadings_plot:
               data_dict['rmse_l2'][index_l2],data_dict['rmse_ncomp'][index_n_comp])
         return data_dict['l2'][index_l2],data_dict["n_comp"][index_n_comp]
     
+    def get_best_param_for_traing_2(self,data_set_name,fluor_name):
+        df1=pd.read_excel('best_param.ods', engine="odf",header=None,names=['name','n','a'])
+        df2=df1[df1.name==data_set_name]
+        #all_result=list()
+        print(df2)
+        num=0
+        for i,j in df2.iterrows():
+            if self.names[data_set_name][num]==fluor_name:
+                return j['a'],j['n']
+            print(j['n'],j['a']),
+            num+=1
+        
+    
     def find_clean_spectrum(self,concentrations:np.ndarray):
         df1=pd.DataFrame(concentrations,columns=self.names[self.file_name])
         df1.loc[:,'sum']=df1.sum(numeric_only=True, axis=1)
@@ -56,7 +69,7 @@ class Controller_for_loadings_plot:
             return False,0
 
     def practise_loadings(self,data_set_name,fluor_name,save):
-        l2,n_comp=self.get_best_param_for_traing(data_set_name,fluor_name)
+        l2,n_comp=self.get_best_param_for_traing_2(data_set_name,fluor_name)
         b=Open_file()
         data=b.main(file_name=self.file_name)
         continue_,index=self.find_clean_spectrum(data.Consentration)
@@ -70,8 +83,8 @@ class Controller_for_loadings_plot:
             mm=Training(file_name=self.file_name,number_of_column=self.number_of_column,
                         number_of_components=[n_comp],l2_coefs=np.array([l2]))
             response=mm.main()
-            w_i=response[3].w_i #excitation
-            w_k=response[3].w_k
+            w_i=response[4].w_i #excitation
+            w_k=response[4].w_k
             
             # print(w_i.shape,data.Emission_wale.shape)
 
@@ -92,15 +105,15 @@ class Controller_for_loadings_plot_for_synthetic_dataset(Controller_for_loadings
         super().__init__(file_name=file_name,number_of_column=number_of_column)
 
     def practise_loadings(self,data_set_name,fluor_name,save):
-        l2,n_comp=self.get_best_param_for_traing(data_set_name,fluor_name)
+        l2,n_comp=self.get_best_param_for_traing_2('syn',fluor_name)
         b=Open_Synthetic_theoretical_loadings()
         data=b.main(file_name=self.file_name)
 
         mm=Training(file_name=self.file_name,number_of_column=self.number_of_column,
                         number_of_components=[n_comp],l2_coefs=np.array([l2]))
         response=mm.main()
-        w_i=response[3].w_i #excitation
-        w_k=response[3].w_k
+        w_i=response[4].w_i #excitation
+        w_k=response[4].w_k
 
         plot=Theory_practice_loadings(practice_emission_loadings=np.array(w_k[0,:,0]),
                             theory_emission_loadings=data.emission_theoretical_loadings[:,self.number_of_column],
