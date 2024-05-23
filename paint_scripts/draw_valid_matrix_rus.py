@@ -2,6 +2,7 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
+from matplotlib.patches import Rectangle
 from dataset_model import Dataset_model as dm
 # from dataset_model import Cross_validation_dataset_model as cvdm
 from dataset_model import Centering_dataset_model as cdm
@@ -10,21 +11,22 @@ from matplotlib.ticker import MultipleLocator
 
 class Draw_valid_matrix_rus:
     def __init__(self,data:np.ndarray,l2:np.ndarray,n_comp:list,substanse_name:str,
-                 metrics_name:str) -> None:
+                 metrics_name:str,p:float) -> None:
         self.data=data
         self.l2=np.log10(l2)
         self.n_comp=n_comp
         self.substance_name=substanse_name
         self.metrics_name=metrics_name
+        self.p=p
 
 
 
     
     def make_dir_name(self,name_dataset:str|None)->str:
         if name_dataset==None:
-            return 'plots4/ru_metrics/none/'+self.substance_name
+            return 'plots4_21/ru_metrics/none/'+self.substance_name
         else:
-            return 'plots4/ru_metrics/'+str(name_dataset)+'/'+self.substance_name
+            return 'plots4_21/ru_metrics/'+str(name_dataset)+'/'+self.substance_name
 
 
     def make_full_name_file(self,name_dataset:str|None)->str:
@@ -49,19 +51,37 @@ class Draw_valid_matrix_rus:
 
         fig_ax_1 = fg.add_subplot(gs[0])
         #plt.imshow(on+tw+th+fo+trtrt,aspect="auto", origin='lower')
-        plt.imshow(self.data,aspect="auto", origin='lower',extent=[self.l2[0]-0.5,
-                                                                     self.l2[-1]+0.5,
+        plt.imshow(self.data,aspect="auto", origin='lower',extent=[self.l2[0]-0.125,
+                                                                     self.l2[-1]+0.125,
                                                                      self.n_comp[0]-0.5,
                                                                      self.n_comp[-1]+0.5])
         plt.ylabel("Количество компонент" , fontsize=label_name_fontsize,labelpad=pad)
         plt.xlabel("Коэффициент L$_{2}$ регуляризации",  fontsize=label_name_fontsize,labelpad=pad)
         
+        if self.p>0:
+            m=np.nanmin(self.data)
+            condition = (self.data <= m+self.p) & (self.data!=m)
+            condition2 = self.data==m
+            ax = plt.gca()
+
+            for (i, j), val in np.ndenumerate(condition):
+                if val:  # Если значение удовлетворяет условию
+                    # Добавление прямоугольника на соответствующую клетку
+                    print(i,j,(j-0.125+self.l2[0])*0.25,j*0.25-0.125+self.l2[0],j*0.25-0.5+self.l2[0])
+                    rect = Rectangle((j*0.25-0.125+self.l2[0] , i - 0.5+self.n_comp[0]), 0.25, 1, linewidth=1, edgecolor='r', facecolor='none', hatch='//')
+                    ax.add_patch(rect)
+            for (i, j), val in np.ndenumerate(condition2):
+                if val:  # Если значение удовлетворяет условию
+                    # Добавление прямоугольника на соответствующую клетку
+                    print(i,j,(j-0.125+self.l2[0])*0.25)
+                    rect = Rectangle((j*0.25-0.125+self.l2[0] , i - 0.5+self.n_comp[0]), 0.25, 1, linewidth=2, edgecolor='red', facecolor='none', hatch='x')
+                    ax.add_patch(rect)
         cbar = plt.colorbar()
         cbar.ax.tick_params(labelsize=30)
         #plt.yticks(range(240,690,50),fontsize=20)
         # ax = plt.gca()  # Получаем текущие оси
         fig_ax_1.yaxis.set_major_locator(MultipleLocator(2))
-        #fig_ax_1.xaxis.set_major_locator(MultipleLocator(1))
+        fig_ax_1.xaxis.set_major_locator(MultipleLocator(1))
 
         fig_ax_1.set_yticklabels(fig_ax_1.get_yticklabels(), fontsize=label_y_number_size)
 

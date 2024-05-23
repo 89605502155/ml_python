@@ -2,6 +2,7 @@ import numpy as np
 from dataset_model import Dataset_model
 from dataset_model import Dataset_model_with_theoretical_loadings_only_for_synthetic
 import pickle as pkl
+import pandas as pd
 from gzip import open
 
 class Open_file:
@@ -68,6 +69,22 @@ class Open_file:
         resoult.Consentration[:,1]*=10
         resoult.Consentration[:,2]*=10
         return resoult
+    
+    def marat_open_96(self)-> Dataset_model:
+        d1=np.load('data/marat_095.npz')
+        names=['humic','tyrosine','tryptophane']
+        resoult = Dataset_model(Sectrun=d1['Spectrum'][:,:,:],Consentration=d1['Concentration'],
+                                Exitation_wale=d1['Excitation'],Emission_wale=d1['Emission'],
+                                Name_of_column_list=names)
+        return resoult
+    
+    def marat_open_60(self)-> Dataset_model:
+        d1=np.load('data/marat_06.npz')
+        names=['humic','tyrosine','tryptophane']
+        resoult = Dataset_model(Sectrun=d1['Spectrum'][:,:,:],Consentration=d1['Concentration'],
+                                Exitation_wale=d1['Excitation'],Emission_wale=d1['Emission'],
+                                Name_of_column_list=names)
+        return resoult
 
     def help(self):
         print("For work call main function and put 'syn','asmund' or 'dorrit','marat'")
@@ -89,6 +106,10 @@ class Open_file:
             return self.dorrit_open_all()
         elif file_name=='marat':
             return self.marat_open()
+        elif file_name=='marat96':
+            return self.marat_open_96()
+        elif file_name=='marat60':
+            return self.marat_open_60()
         else:
             raise NameError('Нет такого datasets. Выбери из syn asmund dorrit marat.'+
                             'Или перейди в файл open.py своего проекта.')

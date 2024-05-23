@@ -31,15 +31,15 @@ class Predict_reference_plot:
                     labelpad=15)
         self.ax.set_ylabel("Найдено",  fontsize=self.ax_name_label_fontsize,
                     labelpad=15)
-        self.ax.set_title(self.rus_names(name), fontsize=self.title_label_name_fontsize,
-                   loc="center" ,pad=15)
+        # self.ax.set_title(self.rus_names(name), fontsize=self.title_label_name_fontsize,
+        #            loc="center" ,pad=15)
         self.ax.tick_params(which='major', length=10, width=2)
         if rmse>=0.0001:
-            stri='$\\frac {RMSE}{ДК}$'+'='+str(rmse.round(4))
+            stri='$\\frac {RMSE}{C_{max}-C_{min}}$'+'='+str(rmse.round(4))
         else:
-            stri='$\\frac {RMSE}{ДК}$'+'<0.0001'
+            stri='$\\frac {RMSE}{C_{max}-C_{min}}$'+'<0.0001'
         self.ax.text(1.1*min(y),0.85*max([max(y),max(pred)]),stri, fontsize=self.text_size_in_box,fontweight='bold',
-              bbox=dict(boxstyle="round",fc='white',ec='black'))
+              bbox=dict(boxstyle="round",fc='white',ec='black',alpha=0.75))
         self.ax.set_xticklabels(self.ax.get_xticklabels(), fontsize=self.ax_label_number_font)
         self.ax.set_yticklabels(self.ax.get_yticklabels(), fontsize=self.ax_label_number_font)
         self.ax.get_xaxis().set_tick_params(direction='in')
@@ -47,9 +47,9 @@ class Predict_reference_plot:
 
     def make_dir_name(self,name_dataset:str|None)->str:
         if name_dataset==None:
-            return 'plots2_ru_p/none'
+            return 'plots23_may_ru_p/none'
         else:
-            return 'plots2_ru_p/'+str(name_dataset)
+            return 'plots23_may_ru_p/'+str(name_dataset)
 
 
     def make_full_name_file(self,name_dataset:str|None)->str:

@@ -21,6 +21,7 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.base import RegressorMixin
 from signal_noise import signal_noise
+import psutil, time
 
 class npls_(RegressorMixin,BaseEstimator):
     def  __init__(self, excitation_wavelenth:np.ndarray,
@@ -225,6 +226,10 @@ class Box_training_algorithm:
             q2_cv=[]
             for j in self.l2_coefs:
                 resoult=self.train(data=data,l2=j,n_comp=i,conc_range=data.Concentration_range)
+                while psutil.cpu_percent(interval=0.1) > 90:
+                    print("sleep")
+                    time.sleep(20)
+                    print("up")
                 rmse_p.append(resoult[0])
                 rmse_cv.append(resoult[1])
                 q2_p.append(resoult[2])
@@ -270,19 +275,22 @@ class Box_training_algorithm:
         print()
         print()
 
-    def paint_rmse_p(self,metrics_name:str,save:bool=False):
+    def paint_rmse_p(self,metrics_name:str,save:bool=False,p:float=0.03):
         plotter=painter(self.rmse_cv,l2=self.l2_coefs,n_comp=self.number_of_components,
-                        substanse_name= self.file_name+"_"+str(self.number_of_column),metrics_name=metrics_name)
+                        substanse_name= self.file_name+"_"+str(self.number_of_column),metrics_name=metrics_name,
+                        p=p)
         plotter.main(save=save)
 
-    def paint_rmse_log(self,metrics_name:str,save:bool=False):
+    def paint_rmse_log(self,metrics_name:str,save:bool=False,p:float=0.03):
         plotter=painter(np.log10(self.rmse_cv),l2=self.l2_coefs,n_comp=self.number_of_components,
-                        substanse_name= self.file_name+"_"+str(self.number_of_column),metrics_name=metrics_name+"_log10")
+                        substanse_name= self.file_name+"_"+str(self.number_of_column),metrics_name=metrics_name+"_log10",
+                        p=p)
         plotter.main(save=save)
 
-    def paint_q2_cv(self,metrics_name:str,save:bool=False):
+    def paint_q2_cv(self,metrics_name:str,save:bool=False,p:float=-1):
         plotter=painter(self.q2_cv,l2=self.l2_coefs,n_comp=self.number_of_components,
-                        substanse_name= self.file_name+"_"+str(self.number_of_column),metrics_name=metrics_name)
+                        substanse_name= self.file_name+"_"+str(self.number_of_column),metrics_name=metrics_name,
+                        p=-1)
         plotter.main(save=save)
 
 class Box_training_algorithm_pls:

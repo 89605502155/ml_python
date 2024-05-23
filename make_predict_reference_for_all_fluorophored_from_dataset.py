@@ -6,6 +6,7 @@ from npls import npls
 import pandas as pd
 from paint_scripts.predict_reference_plot import Predict_reference_plot
 from sklearn.cross_decomposition import PLSRegression
+import psutil, time
 
 class Make_predict_reference_for_all_fluorophores_from_dataset:
     def __init__(self, file_name:str=None, regression_method=npls) -> None:
@@ -34,6 +35,10 @@ class Make_predict_reference_for_all_fluorophores_from_dataset:
         num=0
         for i,j in df2.iterrows():
             print(j['n'],type(j['a']),i)
+            while psutil.cpu_percent(interval=1) > 95:
+                    print("sleep",psutil.cpu_percent(interval=1))
+                    time.sleep(20)
+                    print("up",psutil.cpu_percent(interval=1))
             model=Predict_for_predicted_reference_plots_by_kfold(
                 file_name=self.file_name,number_of_column=num,
                 number_of_components=[j['n']],l2_coefs=np.array([j['a']]),
